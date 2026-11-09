@@ -10,6 +10,8 @@ formatted Markdown messages to a
 - Listens on `POST /webhook` for OpenProject webhook payloads.
 - Formats `work_package:created` and `work_package:updated` events into
   Mattermost messages with tables for the work package fields and changes.
+- Description changes are shown as a unified diff in a `diff` code block, so
+  Mattermost highlights added/removed lines.
 - Ignores any other event types (responds `200` with `{"status": "ignored"}`).
 - Optionally verifies a bearer token if OpenProject is configured to send one.
 

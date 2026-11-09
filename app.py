@@ -1,3 +1,4 @@
+import difflib
 import json
 import logging
 import os
@@ -63,19 +64,50 @@ def format_created(wp, actor):
     return "\n".join(lines)
 
 
+def description_diff(old, new):
+    diff = list(
+        difflib.unified_diff(
+            (old or "").splitlines(keepends=False),
+            (new or "").splitlines(keepends=False),
+            fromfile="before",
+            tofile="after",
+            lineterm="",
+        )
+    )
+    if not diff:
+        return None
+    body = "\n".join(diff)
+    if len(body) > 3500:
+        body = body[:3500] + "\n… _(diff truncated)_"
+    return "```diff\n{}\n```".format(body)
+
+
 def format_updated(wp, actor):
+    raw_changes = wp.get("_changes") or {}
     changes = []
-    for key, value in (wp.get("_changes") or {}).items():
+    description_change = None
+    for key, value in raw_changes.items():
         old = value[0] if isinstance(value, (list, tuple)) and len(value) > 0 else ""
         new = value[1] if isinstance(value, (list, tuple)) and len(value) > 1 else value
+        if key == "description":
+            if isinstance(old, dict):
+                old = old.get("raw", "")
+            if isinstance(new, dict):
+                new = new.get("raw", "")
+            description_change = (old, new)
+            continue
         changes.append("| {} | {} | {} |".format(key, old, new))
     lines = [
         "**{} updated**: [{}]({})".format(actor, wp.get("subject", "_(no subject)_"), wp_url(wp)),
         "",
     ]
+    if description_change:
+        lines += ["**Description changed**", ""]
+        diff = description_diff(*description_change)
+        lines += [diff or "_(no visible line changes)_", ""]
     if changes:
         lines += ["| Field | Before | After |", "|---|---|---|"] + changes
-    else:
+    if not description_change and not changes:
         lines += ["_(no change details in payload)_"]
     return "\n".join(lines)
 
