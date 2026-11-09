@@ -5,3 +5,5 @@ __pycache__/
 .venv/
 README.md
 docker-compose.yml
+nginx/
+certs/

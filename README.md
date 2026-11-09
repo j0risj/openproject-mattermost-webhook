@@ -40,7 +40,7 @@ docker run -d --name op-mm-bridge \
   openproject-mattermost-webhook
 ```
 
-Or with `docker-compose.yml`:
+Or with `docker-compose.yml` (see below for the included nginx HTTPS setup):
 
 ```yaml
 services:
@@ -53,6 +53,41 @@ services:
       OPENPROJECT_BASE_URL: "https://openproject.example.com"
     restart: unless-stopped
 ```
+
+## HTTPS
+
+The included `docker-compose.yml` runs an nginx reverse proxy in front of the
+bridge. Place your certificate files in a `certs/` directory next to the
+compose file:
+
+```
+certs/
+├── fullchain.pem   # certificate (chain)
+└── privkey.pem      # private key
+```
+
+Then start everything with:
+
+```bash
+docker compose up -d --build
+```
+
+nginx terminates TLS on port 443 and proxies to the bridge, while plain HTTP
+on port 80 is redirected to HTTPS. Point OpenProject at
+`https://<host>/webhook`.
+
+For a quick self-signed certificate (fine for internal/testing setups):
+
+```bash
+mkdir -p certs
+openssl req -x509 -newkey rsa:4096 -nodes -days 365 \
+  -keyout certs/privkey.pem -out certs/fullchain.pem \
+  -subj "/CN=your-hostname"
+```
+
+To use your own proxy instead, run the bridge container without published
+ports (or behind your existing proxy) and forward to its internal port 8080.
+The `certs/` directory is git-ignored; never commit private keys.
 
 ## Configure OpenProject
 
