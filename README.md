@@ -56,9 +56,12 @@ services:
 
 ## HTTPS
 
-The included `docker-compose.yml` runs an nginx reverse proxy in front of the
-bridge. Place your certificate files in a `certs/` directory next to the
-compose file:
+The included `docker-compose.yml` runs a [Traefik](https://traefik.io) reverse
+proxy in front of the bridge. All Traefik configuration lives in the compose
+file itself — static config via `TRAEFIK_*` environment variables, routing
+via Docker labels — so there are no separate config files to maintain.
+
+Place your certificate files in a `certs/` directory next to the compose file:
 
 ```
 certs/
@@ -72,9 +75,14 @@ Then start everything with:
 docker compose up -d --build
 ```
 
-nginx terminates TLS on port 443 and proxies to the bridge, while plain HTTP
-on port 80 is redirected to HTTPS. Point OpenProject at
+Traefik terminates TLS on port 443 and proxies to the bridge, while plain
+HTTP on port 80 is redirected to HTTPS. Point OpenProject at
 `https://<host>/webhook`.
+
+Note: Traefik can only load provided certificate files through its file
+provider, so the compose file generates that minimal dynamic config inside
+the container at startup (via the `entrypoint` script). Nothing is stored in
+the repository.
 
 For a quick self-signed certificate (fine for internal/testing setups):
 
