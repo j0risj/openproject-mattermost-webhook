@@ -57,9 +57,9 @@ services:
 ## HTTPS
 
 The included `docker-compose.yml` runs a [Caddy](https://caddyserver.com)
-reverse proxy in front of the bridge. The Caddy config is piped in via stdin
-from the compose file (no config files to maintain) and the certificate paths
-and upstream are set with environment variables.
+reverse proxy in front of the bridge, using the checked-in `Caddyfile`. The
+certificate paths and upstream are set with environment variables in the
+compose file and substituted into the `Caddyfile`.
 
 Place your certificate files in a `certs/` directory next to the compose file:
 

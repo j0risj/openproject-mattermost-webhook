@@ -1,0 +1,12 @@
+{
+	auto_https off
+}
+
+:443 {
+	tls {$CERT_FILE} {$KEY_FILE}
+	reverse_proxy {$UPSTREAM}
+}
+
+:80 {
+	redir https://{host}{uri} 301
+}

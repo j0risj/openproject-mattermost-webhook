@@ -17,22 +17,8 @@ services:
       CERT_FILE: /etc/caddy/certs/fullchain.pem
       KEY_FILE: /etc/caddy/certs/privkey.pem
       UPSTREAM: op-mm-bridge:8080
-    entrypoint:
-      - sh
-      - -c
-      - |
-        printf '{
-          auto_https off
-        }
-        :443 {
-          tls {$CERT_FILE} {$KEY_FILE}
-          reverse_proxy {$UPSTREAM}
-        }
-        :80 {
-          redir https://{host}{uri} 301
-        }
-        ' | caddy run --config - --adapter caddyfile
     volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./certs:/etc/caddy/certs:ro
     depends_on:
       - op-mm-bridge
